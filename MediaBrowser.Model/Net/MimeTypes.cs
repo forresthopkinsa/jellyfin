@@ -178,39 +178,12 @@ namespace MediaBrowser.Model.Net
                 throw new ArgumentException("String can't be empty.", nameof(filename));
             }
 
-            var ext = Path.GetExtension(filename);
-
-            if (_mimeTypeLookup.TryGetValue(ext, out string? result))
+            if (enableStreamDefault)
             {
-                return result;
+                return Model.MimeTypes.GetMimeType(filename);
             }
 
-            // Catch-all for all video types that don't require specific mime types
-            if (_videoFileExtensions.Contains(ext))
-            {
-                return "video/" + ext.Substring(1);
-            }
-
-            // Type text
-            if (string.Equals(ext, ".html", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(ext, ".htm", StringComparison.OrdinalIgnoreCase))
-            {
-                return "text/html; charset=UTF-8";
-            }
-
-            if (string.Equals(ext, ".log", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(ext, ".srt", StringComparison.OrdinalIgnoreCase))
-            {
-                return "text/plain";
-            }
-
-            // Misc
-            if (string.Equals(ext, ".dll", StringComparison.OrdinalIgnoreCase))
-            {
-                return "application/octet-stream";
-            }
-
-            return enableStreamDefault ? "application/octet-stream" : null;
+            return Model.MimeTypes.TryGetMimeType(filename, out var type) ? type : null;
         }
 
         public static string? ToExtension(string mimeType)
